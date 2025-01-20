@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="movieApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie Rental Store</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      padding: 20px;
+    }
+
+    .container {
+      width: 80%;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      font-weight: bold;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .movie-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .movie-table th, .movie-table td {
+      padding: 10px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+
+    .movie-table th {
+      background-color: #2c3e50;
+      color: white;
+    }
+
+    .movie-table tbody tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    .filters {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .filters label {
+      margin-right: 10px;
+    }
+
+    .form-container {
+      margin-top: 30px;
+    }
+
+    .form-container h3 {
+      color: #2c3e50;
+    }
+
+    /* Add media queries for responsive design */
+    @media (max-width: 768px) {
+      .filters {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .filters select {
+        width: 100%;
+      }
+
+      .movie-table th, .movie-table td {
+        padding: 8px;
+      }
+
+      button {
+        width: auto;
+      }
+    }
+  </style>
+</head>
+<body ng-controller="MovieController">
+
+  <div class="container">
+    <h1>Movie Rental Store</h1>
+
+    <!-- Filters Section -->
+    <div class="filters">
+      <div>
+        <label for="genre">Filter by Genre:</label>
+        <select ng-model="selectedGenre">
+          <option value="">All Genres</option>
+          <option value="Sci-Fi">Sci-Fi</option>
+          <option value="Drama">Drama</option>
+          <option value="Action">Action</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="year">Filter by Year:</label>
+        <select ng-model="selectedYear">
+          <option value="">All Years</option>
+          <option value="2022">2022</option>
+          <option value="2019">2019</option>
+          <option value="2014">2014</option>
+          <option value="2010">2010</option>
+          <option value="2008">2008</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Movie Table -->
+    <table class="movie-table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Genre</th>
+          <th>Year</th>
+          <th>Rental Price</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="movie in filteredMovies = (movies | filter:{genre:selectedGenre, year:selectedYear})">
+          <td>{{movie.title}}</td>
+          <td>{{movie.genre}}</td>
+          <td>{{movie.year}}</td>
+          <td>${{calculateRentalPrice(movie.year)}}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Add New Movie Form -->
+    <div class="form-container">
+      <h3>Add New Movie</h3>
+      <form ng-submit="addMovie()">
+        <label for="title">Movie Title:</label>
+        <input type="text" ng-model="newMovie.title" required>
+
+        <label for="genre">Genre:</label>
+        <input type="text" ng-model="newMovie.genre" required>
+
+        <label for="year">Year:</label>
+        <input type="number" ng-model="newMovie.year" required>
+
+        <button type="submit">Add Movie</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Define AngularJS Module
+var app = angular.module('movieApp', []);
+
+// Define Custom Service for Rental Price Calculation
+app.service('RentalService', function() {
+  this.calculateRentalPrice = function(year) {
+    var currentYear = new Date().getFullYear();
+    if (currentYear - year <= 3) {
+      return 5; // Higher price for recent movies
+    } else {
+      return 3; // Discounted price for older movies
+    }
+  };
+});
+
+// Define Controller
+app.controller('MovieController', ['$scope', 'RentalService', function($scope, RentalService) {
+  // Movie Dataset
+  $scope.movies = [
+    { title: 'Inception', genre: 'Sci-Fi', year: 2010 },
+    { title: 'Parasite', genre: 'Drama', year: 2019 },
+    { title: 'The Dark Knight', genre: 'Action', year: 2008 },
+    { title: 'Avengers: Endgame', genre: 'Action', year: 2019 },
+    { title: 'Interstellar', genre: 'Sci-Fi', year: 2014 }
+  ];
+
+  // Function to Calculate Rental Price
+  $scope.calculateRentalPrice = function(year) {
+    return RentalService.calculateRentalPrice(year);
+  };
+
+  // Function to Add New Movie
+  $scope.addMovie = function() {
+    // Check if title is unique
+    var isUnique = true;
+    for (var i = 0; i < $scope.movies.length; i++) {
+      if ($scope.movies[i].title === $scope.newMovie.title) {
+        isUnique = false;
+        alert("Movie title must be unique.");
+        break;
+      }
+    }
+
+    // Add new movie if title is unique
+    if (isUnique) {
+      $scope.movies.push({
+        title: $scope.newMovie.title,
+        genre: $scope.newMovie.genre,
+        year: $scope.newMovie.year
+      });
+
+      // Reset the new movie form
+      $scope.newMovie = {};
+    }
+  };
+}]);
+  </script>
+</body>
+</html>

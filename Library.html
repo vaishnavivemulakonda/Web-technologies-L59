@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="eng" ng-app="LibraryApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+<body ng-controller="LibraryController">
+    <h1>Library Management</h1>
+    
+    <!-- Display the library data in a dynamic table -->
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Book Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="book in library">
+                <td>{{ book.category }}</td>
+                <td><input type="number" ng-model="book.count"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Add New Category</h2>
+    <form ng-submit="addCategory()">
+        <label>
+            Category Name:
+            <input type="text" ng-model="newCategory.name" required>
+        </label>
+        <label>
+            Initial Count:
+            <input type="number" ng-model="newCategory.count" required>
+        </label>
+        <button type="submit">Add Category</button>
+        <p style="color: rgb(185, 178, 178);" ng-if="errorMessage">{{ errorMessage }}</p>
+    </form>
+
+    <script>
+        // Define the AngularJS application
+        angular.module('LibraryApp', [])
+            .controller('LibraryController', ['$scope', function ($scope) {
+                // Initialize library data
+                $scope.library = [
+                    { category: 'Fiction', count: 120 },
+                    { category: 'Non-Fiction', count: 80 },
+                    { category: 'Science', count: 150 },
+                    { category: 'Mathematics', count: 70 },
+                    { category: 'Zoology',count:35},
+                    { category: 'Journals',count:50},
+                ];
+
+                // Initialize a new category object
+                $scope.newCategory = { name: '', count: 0 };
+                $scope.errorMessage = '';
+
+                // Function to add a new category
+                $scope.addCategory = function () {
+                    // Check for duplicate category names
+                    const exists = $scope.library.some(item => item.category.toLowerCase() === $scope.newCategory.name.toLowerCase());
+                    if (exists) {
+                        $scope.errorMessage = 'Category name must be unique!';
+                    } else {
+                        $scope.library.push({
+                            category: $scope.newCategory.name,
+                            count: $scope.newCategory.count
+                        });
+                        // Reset the form and error message
+                        $scope.newCategory = { name: '', count: 0 };
+                        $scope.errorMessage = '';
+                    }
+                };
+            }]);
+    </script>
+</body>
+</html>
