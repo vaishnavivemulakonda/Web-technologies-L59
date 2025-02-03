@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html ng-app="WeatherApp">
+
+<head>
+  <title>Weather Dashboard</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 350px;
+    }
+
+    .search-bar input,
+    .search-bar button {
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    .search-bar button {
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    .weather-card {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .error-message {
+      color: red;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body ng-controller="WeatherController">
+
+  <div class="container">
+    <h1>Weather Dashboard</h1>
+    <div class="search-bar">
+      <input type="text" ng-model="city" placeholder="Enter city name">
+      <button ng-click="fetchWeather()">Get Weather</button>
+    </div>
+    <div ng-if="weatherData" class="weather-card">
+      <h2>{{ weatherData.name }}</h2>
+      <p>Temperature: {{ weatherData.main.temp }}°C</p>
+      <p>Humidity: {{ weatherData.main.humidity }}%</p>
+      <p>Conditions: {{ weatherData.weather[0].description }}</p>
+    </div>
+    <div ng-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+  </div>
+
+  <script>
+    var app = angular.module('WeatherApp', []);
+
+    app.controller('WeatherController', function ($scope, $http) {
+      $scope.city = '';
+      $scope.weatherData = null;
+      $scope.errorMessage = '';
+
+      $scope.fetchWeather = function () {
+        if (!$scope.city) return;
+
+        var apiKey = '628d0e98f6808e5cf2756fbaee2dc0b2'; // Replace with your OpenWeatherMap API key
+        var apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${$scope.city}&appid=${apiKey}&units=metric`;
+
+        $http.get(apiUrl)
+          .then(function (response) {
+            $scope.weatherData = response.data;
+            $scope.errorMessage = '';
+          })
+          .catch(function () {
+            $scope.weatherData = null;
+            $scope.errorMessage = 'City not found or API error.';
+          });
+      };
+    });
+  </script>
+
+</body>
+
+</html>
